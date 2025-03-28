@@ -1,4 +1,4 @@
-use std::{env, fs, process::exit};
+use std::{env, process::exit};
 
 use scanner::parsing::structure::ScanParser;
 
@@ -11,8 +11,6 @@ fn main() {
     });
 
     ScanParser::parse(&file);
-    //let contents = fs::read_to_string(&file).expect("Should have been able to read the file");
 
     println!("{file}");
-    //println!("contents : \n{contents}");
 }
