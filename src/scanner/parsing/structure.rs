@@ -4,6 +4,7 @@ pub struct ScanParser {
 
 #[derive(Debug)]
 pub enum Kind {
+    Char,       // ""
     Groupe,     //()
     Classe,     //[]
     Quantifier, //*, +, ?, {}

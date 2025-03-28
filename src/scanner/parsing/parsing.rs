@@ -2,7 +2,10 @@ use std::fs;
 
 use crate::scanner::parsing::utils::is_a_group;
 
-use super::structure::ScanParser;
+use super::{
+    structure::{Parts, ScanParser},
+    utils::{is_a_char, is_a_class},
+};
 
 impl ScanParser {
     pub fn parse(scan_path: &str) {
@@ -15,6 +18,26 @@ impl ScanParser {
             match c {
                 '(' => {
                     let part = match is_a_group(&mut chars) {
+                        Ok(p) => p,
+                        Err(e) => {
+                            println!("Error : {}", e);
+                            return;
+                        }
+                    };
+                    println!("part => {:?}", part);
+                }
+                '[' => {
+                    let part = match is_a_class(&mut chars) {
+                        Ok(p) => p,
+                        Err(e) => {
+                            println!("Error : {}", e);
+                            return;
+                        }
+                    };
+                    println!("part => {:?}", part);
+                }
+                '"' => {
+                    let part = match is_a_char(&mut chars) {
                         Ok(p) => p,
                         Err(e) => {
                             println!("Error : {}", e);
