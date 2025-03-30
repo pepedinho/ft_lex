@@ -1,10 +1,10 @@
 use std::fs;
 
-use crate::scanner::parsing::utils::is_a_group;
+use crate::scanner::parsing::utils::{is_a_group, quant};
 
 use super::{
-    structure::{Parts, ScanParser},
-    utils::{is_a_char, is_a_class},
+    structure::{Parts, RegularExpression, ScanParser},
+    utils::{handle_structure, is_a_char, is_a_class, skip_to_nl},
 };
 
 impl ScanParser {
@@ -14,59 +14,20 @@ impl ScanParser {
 
         let mut chars = content.chars().peekable();
 
+        let mut exprs = RegularExpression::new();
+
         while let Some(c) = chars.next() {
             match c {
-                '(' => {
-                    let part = match is_a_group(&mut chars) {
-                        Ok(p) => p,
-                        Err(e) => {
-                            println!("Error : {}", e);
-                            return;
-                        }
-                    };
-                    println!("part => {:?}", part);
-                }
-                '[' => {
-                    let part = match is_a_class(&mut chars) {
-                        Ok(p) => p,
-                        Err(e) => {
-                            println!("Error : {}", e);
-                            return;
-                        }
-                    };
-                    println!("part => {:?}", part);
-                }
-                '"' => {
-                    let part = match is_a_char(&mut chars) {
-                        Ok(p) => p,
-                        Err(e) => {
-                            println!("Error : {}", e);
-                            return;
-                        }
-                    };
-                    println!("part => {:?}", part);
-                }
-                ' ' => {
-                    while let Some(next_c) = chars.next() {
-                        if next_c == '\n' {
-                            break;
-                        }
-                    }
-                }
+                '(' => handle_structure(&mut chars, is_a_group, &mut exprs),
+                '[' => handle_structure(&mut chars, is_a_class, &mut exprs),
+                '"' => handle_structure(&mut chars, is_a_char, &mut exprs),
+                ' ' => skip_to_nl(&mut chars),
+                '+' | '*' | '?' => quant(c, &mut exprs),
                 _ => {}
             }
-
-            if c == '(' {
-                let part = match is_a_group(&mut chars) {
-                    Ok(p) => p,
-                    Err(e) => {
-                        println!("Error : {}", e);
-                        return;
-                    }
-                };
-                println!("part => {:?}", part);
-            }
         }
+
+        println!("exprs => {}", exprs);
 
         //println!("content : {content}");
     }
