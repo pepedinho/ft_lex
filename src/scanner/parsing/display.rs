@@ -22,7 +22,7 @@ impl fmt::Display for Kind {
             Kind::Char => write!(f, "Char"),
             Kind::Groupe => write!(f, "Group"),
             Kind::Classe => write!(f, "Class"),
-            Kind::Quantifier(q) => write!(f, "Quantifier({})", q), // On affiche le Quantifier
+            Kind::Quantifier(q) => write!(f, "Quantifier({})", q),
             Kind::Anchor => write!(f, "Anchor"),
             Kind::Or => write!(f, "Or"),
             Kind::None => write!(f, "None"),
@@ -32,7 +32,11 @@ impl fmt::Display for Kind {
 
 impl fmt::Display for Parts {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{}: \"{}\"]~[{}] ", self.kind, self.content, self.quant)
+        write!(
+            f,
+            "[{}: \"{}\"]~[{}] \n\t\t(action) -> [{}]",
+            self.kind, self.content, self.quant, self.action
+        )
     }
 }
 

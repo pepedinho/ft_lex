@@ -85,6 +85,39 @@ where
     }
 }
 
+pub fn is_action<I>(chars: &mut I) -> bool
+where
+    I: Iterator<Item = char>,
+{
+    while let Some(next_c) = chars.next() {
+        if next_c != ' ' {
+            if next_c != '|' {
+                return true;
+            }
+            return false;
+        }
+    }
+    true
+}
+
+pub fn get_action<I>(chars: &mut I, exprs: &mut RegularExpression)
+where
+    I: Iterator<Item = char>,
+{
+    let mut action = String::new();
+    while let Some(next_c) = chars.next() {
+        if next_c == ';' {
+            break;
+        }
+        if next_c != ' ' {
+            action.push(next_c);
+        }
+    }
+    if let Some(last_part) = exprs.parts.last_mut() {
+        last_part.add_action(action);
+    }
+}
+
 pub fn quant(c: char, exprs: &mut RegularExpression) {
     if let Some(last_part) = exprs.parts.last_mut() {
         match c {

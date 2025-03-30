@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::scanner::parsing::utils::{is_a_group, quant};
+use crate::scanner::parsing::utils::{get_action, is_a_group, is_action, quant};
 
 use super::{
     structure::{Parts, RegularExpression, ScanParser},
@@ -21,7 +21,10 @@ impl ScanParser {
                 '(' => handle_structure(&mut chars, is_a_group, &mut exprs),
                 '[' => handle_structure(&mut chars, is_a_class, &mut exprs),
                 '"' => handle_structure(&mut chars, is_a_char, &mut exprs),
-                ' ' => skip_to_nl(&mut chars),
+                ' ' => match is_action(&mut chars.clone()) {
+                    true => get_action(&mut chars, &mut exprs),
+                    false => {}
+                },
                 '+' | '*' | '?' => quant(c, &mut exprs),
                 _ => {}
             }

@@ -28,6 +28,7 @@ pub struct Parts {
     pub content: String,
     pub kind: Kind,
     pub quant: Kind,
+    pub action: String,
 }
 
 #[derive(Debug)]
@@ -46,11 +47,15 @@ impl Parts {
         Parts {
             content,
             kind,
+            action: String::new(),
             quant: Kind::None,
         }
     }
     pub fn add_quant(&mut self, quant: Kind) {
         self.quant = quant;
+    }
+    pub fn add_action(&mut self, action: String) {
+        self.action = action;
     }
 }
 
