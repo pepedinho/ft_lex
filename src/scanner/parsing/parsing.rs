@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::scanner::parsing::{
     structure::Kind,
-    utils::{get_action, is_action, quant},
+    utils::{get_action, is_a_class, is_action, quant},
 };
 
 use super::structure::{ExprsLst, RegularExpression, ScanParser, Token};
@@ -20,8 +20,13 @@ impl ScanParser {
             match c {
                 '(' => exprs.tokens.push(Token::new(c, Kind::OpenP)),
                 ')' => exprs.tokens.push(Token::new(c, Kind::CloseP)),
-                '[' => exprs.tokens.push(Token::new(c, Kind::OpenB)),
-                ']' => exprs.tokens.push(Token::new(c, Kind::CloseB)),
+                '[' => {
+                    exprs.content.push(c);
+                    let tmp = is_a_class(&mut chars, &mut exprs);
+                    exprs.content.push_str(&tmp);
+                    continue;
+                }
+                //']' => exprs.tokens.push(Token::new(c, Kind::CloseB)),
                 '"' => exprs.tokens.push(Token::new(c, Kind::Quotes)),
                 ' ' => match is_action(&mut chars.clone()) {
                     true => {
@@ -32,7 +37,7 @@ impl ScanParser {
                     false => exprs.tokens.push(Token::new(c, Kind::Char)),
                 },
                 '+' | '*' | '?' => quant(c, &mut exprs),
-                '\n' => {}
+                '\n' | '%' | '\r' => {}
                 _ => exprs.tokens.push(Token::new(c, Kind::Char)),
             }
             exprs.content.push(c);

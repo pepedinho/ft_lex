@@ -44,7 +44,7 @@ impl fmt::Display for RegularExpression {
         let parts_str: Vec<String> = self.tokens.iter().map(|p| format!("{}", p)).collect();
         write!(
             f,
-            "RegularExpression:\n- Content: \"{}\"\n- Token:\n  {}\n\t\t Action: {}",
+            "RegularExpression:\n- Content: \"{}\"\n- Token:\n{}\n- Action:\n{}",
             self.content,
             parts_str.join(""),
             self.action,

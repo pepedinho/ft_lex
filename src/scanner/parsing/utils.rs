@@ -1,4 +1,4 @@
-use std::str::Chars;
+use std::{char, str::Chars};
 
 use super::structure::{Kind, RegularExpression, Token};
 
@@ -37,25 +37,58 @@ where
 //     return Err("Excepted ')'".to_string());
 // }
 
-// pub fn is_a_class<I>(chars: &mut I) -> Result<Token, String>
-// where
-//     I: Iterator<Item = char>,
-// {
-//     let mut content = String::new();
-//
-//     while let Some(c) = chars.next() {
-//         match c {
-//             ']' => {
-//                 return Ok(Token::new(c, Kind::Classe));
-//             }
-//             '"' => {
-//                 return Err("In some quotes".to_string());
-//             }
-//             _ => content.push(c),
-//         }
-//     }
-//     return Err("Excepted ']'".to_string());
-// }
+pub fn is_a_class(
+    chars: &mut std::iter::Peekable<std::str::Chars>,
+    expr: &mut RegularExpression,
+) -> String {
+    let mut previous_char: Option<char> = None;
+    let mut content = String::new();
+    while let Some(mut c) = chars.next() {
+        if let Some(_p) = previous_char {
+            if c != ']' {
+                expr.tokens.push(Token::new('|', Kind::Or));
+            }
+        }
+        match c {
+            ']' => {
+                content.push(c);
+                break;
+            }
+            '-' => {
+                if let Some(p_char) = previous_char {
+                    match p_char {
+                        '\\' | '\0' => {
+                            expr.tokens.push(Token::new(c, Kind::Char));
+                            content.push(c);
+                        }
+                        _ => {
+                            content.push(c);
+                            let mut ite = (p_char as u8 + 1) as char;
+                            if let Some(n_char) = chars.next() {
+                                //TODO: gerer si b_char > n_char
+                                while ite <= n_char {
+                                    expr.tokens.push(Token::new(ite, Kind::Char));
+                                    if ite != n_char {
+                                        expr.tokens.push(Token::new('|', Kind::Or));
+                                    }
+                                    ite = (ite as u8 + 1) as char;
+                                }
+                                c = n_char;
+                                content.push(c);
+                            }
+                        }
+                    }
+                }
+            }
+            _ => {
+                expr.tokens.push(Token::new(c, Kind::Char));
+                content.push(c);
+            }
+        }
+        previous_char = Some(c);
+    }
+    content
+}
 
 pub fn is_a_char<I>(chars: &mut I) -> Result<Token, String>
 where
