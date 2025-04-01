@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::scanner::parsing::structure::Kind;
 
-use super::structure::{Parts, Quant, RegularExpression};
+use super::structure::{Quant, RegularExpression, Token};
 
 impl fmt::Display for Quant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -30,7 +30,7 @@ impl fmt::Display for Kind {
     }
 }
 
-impl fmt::Display for Parts {
+impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -42,10 +42,10 @@ impl fmt::Display for Parts {
 
 impl fmt::Display for RegularExpression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let parts_str: Vec<String> = self.parts.iter().map(|p| format!("{}", p)).collect();
+        let parts_str: Vec<String> = self.tokens.iter().map(|p| format!("{}", p)).collect();
         write!(
             f,
-            "RegularExpression:\n- Content: \"{}\"\n- Parts:\n  {}",
+            "RegularExpression:\n- Content: \"{}\"\n- Token:\n  {}",
             self.content,
             parts_str.join("\n  ")
         )

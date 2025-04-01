@@ -1,15 +1,15 @@
 use std::str::Chars;
 
-use super::structure::{Kind, Parts, RegularExpression};
+use super::structure::{Kind, RegularExpression, Token};
 
 pub fn handle_structure<I, F>(chars: &mut I, parser: F, exprs: &mut RegularExpression)
 where
     I: Iterator<Item = char>,
-    F: Fn(&mut I) -> Result<Parts, String>,
+    F: Fn(&mut I) -> Result<Token, String>,
 {
     match parser(chars) {
         Ok(p) => {
-            exprs.parts.push(p);
+            exprs.tokens.push(p);
         }
         Err(e) => {
             println!("Error : {}", e);
@@ -17,7 +17,7 @@ where
     }
 }
 
-pub fn is_a_group<I>(chars: &mut I) -> Result<Parts, String>
+pub fn is_a_group<I>(chars: &mut I) -> Result<Token, String>
 where
     I: Iterator<Item = char>,
 {
@@ -26,7 +26,7 @@ where
     while let Some(c) = chars.next() {
         match c {
             ')' => {
-                return Ok(Parts::new(content, Kind::Groupe));
+                return Ok(Token::new(content, Kind::Groupe));
             }
             '"' => {
                 return Err("In some quotes".to_string());
@@ -37,7 +37,7 @@ where
     return Err("Excepted ')'".to_string());
 }
 
-pub fn is_a_class<I>(chars: &mut I) -> Result<Parts, String>
+pub fn is_a_class<I>(chars: &mut I) -> Result<Token, String>
 where
     I: Iterator<Item = char>,
 {
@@ -46,7 +46,7 @@ where
     while let Some(c) = chars.next() {
         match c {
             ']' => {
-                return Ok(Parts::new(content, Kind::Classe));
+                return Ok(Token::new(content, Kind::Classe));
             }
             '"' => {
                 return Err("In some quotes".to_string());
@@ -57,7 +57,7 @@ where
     return Err("Excepted ']'".to_string());
 }
 
-pub fn is_a_char<I>(chars: &mut I) -> Result<Parts, String>
+pub fn is_a_char<I>(chars: &mut I) -> Result<Token, String>
 where
     I: Iterator<Item = char>,
 {
@@ -66,7 +66,7 @@ where
     while let Some(c) = chars.next() {
         match c {
             '"' => {
-                return Ok(Parts::new(content, Kind::Char));
+                return Ok(Token::new(content, Kind::Char));
             }
             _ => content.push(c),
         }
@@ -113,13 +113,13 @@ where
             action.push(next_c);
         }
     }
-    if let Some(last_part) = exprs.parts.last_mut() {
+    if let Some(last_part) = exprs.tokens.last_mut() {
         last_part.add_action(action);
     }
 }
 
 pub fn quant(c: char, exprs: &mut RegularExpression) {
-    if let Some(last_part) = exprs.parts.last_mut() {
+    if let Some(last_part) = exprs.tokens.last_mut() {
         match c {
             '+' => {
                 last_part.add_quant(Kind::Quantifier(super::structure::Quant::Plus));

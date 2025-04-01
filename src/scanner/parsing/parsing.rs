@@ -3,7 +3,7 @@ use std::fs;
 use crate::scanner::parsing::utils::{get_action, is_a_group, is_action, quant};
 
 use super::{
-    structure::{Parts, RegularExpression, ScanParser},
+    structure::{RegularExpression, ScanParser, Token},
     utils::{handle_structure, is_a_char, is_a_class, skip_to_nl},
 };
 

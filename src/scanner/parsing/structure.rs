@@ -24,7 +24,7 @@ pub enum Kind {
 }
 
 #[derive(Debug)]
-pub struct Parts {
+pub struct Token {
     pub content: String,
     pub kind: Kind,
     pub quant: Kind,
@@ -34,7 +34,7 @@ pub struct Parts {
 #[derive(Debug)]
 pub struct RegularExpression {
     pub content: String,
-    pub parts: Vec<Parts>,
+    pub tokens: Vec<Token>,
 }
 
 #[derive(Debug)]
@@ -42,9 +42,9 @@ pub struct ExpressionTree {
     pub expr: Vec<RegularExpression>,
 }
 
-impl Parts {
+impl Token {
     pub fn new(content: String, kind: Kind) -> Self {
-        Parts {
+        Token {
             content,
             kind,
             action: String::new(),
@@ -63,7 +63,7 @@ impl RegularExpression {
     pub fn new() -> Self {
         RegularExpression {
             content: String::new(),
-            parts: Vec::new(),
+            tokens: Vec::new(),
         }
     }
 }
