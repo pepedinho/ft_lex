@@ -13,9 +13,7 @@ impl ScanParser {
             fs::read_to_string(&scan_path).expect("Should have been able to read the file");
 
         let mut chars = content.chars().peekable();
-
         let mut exprs = RegularExpression::new();
-
         let mut list = ExprsLst::new();
 
         while let Some(c) = chars.next() {
@@ -34,8 +32,10 @@ impl ScanParser {
                     false => exprs.tokens.push(Token::new(c, Kind::Char)),
                 },
                 '+' | '*' | '?' => quant(c, &mut exprs),
-                _ => {}
+                '\n' => {}
+                _ => exprs.tokens.push(Token::new(c, Kind::Char)),
             }
+            exprs.content.push(c);
         }
 
         println!("{}", list);

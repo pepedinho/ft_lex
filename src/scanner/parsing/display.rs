@@ -46,7 +46,7 @@ impl fmt::Display for RegularExpression {
             f,
             "RegularExpression:\n- Content: \"{}\"\n- Token:\n  {}\n\t\t Action: {}",
             self.content,
-            parts_str.join("\n  "),
+            parts_str.join(""),
             self.action,
         )
     }
