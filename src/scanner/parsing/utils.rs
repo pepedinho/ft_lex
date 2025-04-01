@@ -2,7 +2,7 @@ use std::str::Chars;
 
 use super::structure::{Kind, RegularExpression, Token};
 
-pub fn handle_structure<I, F>(chars: &mut I, parser: F, exprs: &mut RegularExpression)
+pub fn handle_token<I, F>(chars: &mut I, parser: F, exprs: &mut RegularExpression)
 where
     I: Iterator<Item = char>,
     F: Fn(&mut I) -> Result<Token, String>,

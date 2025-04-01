@@ -4,7 +4,7 @@ use crate::scanner::parsing::utils::{get_action, is_a_group, is_action, quant};
 
 use super::{
     structure::{RegularExpression, ScanParser, Token},
-    utils::{handle_structure, is_a_char, is_a_class, skip_to_nl},
+    utils::{handle_token, is_a_char, is_a_class, skip_to_nl},
 };
 
 impl ScanParser {
@@ -18,9 +18,9 @@ impl ScanParser {
 
         while let Some(c) = chars.next() {
             match c {
-                '(' => handle_structure(&mut chars, is_a_group, &mut exprs),
-                '[' => handle_structure(&mut chars, is_a_class, &mut exprs),
-                '"' => handle_structure(&mut chars, is_a_char, &mut exprs),
+                '(' => handle_token(&mut chars, is_a_group, &mut exprs),
+                '[' => handle_token(&mut chars, is_a_class, &mut exprs),
+                '"' => handle_token(&mut chars, is_a_char, &mut exprs),
                 ' ' => match is_action(&mut chars.clone()) {
                     true => get_action(&mut chars, &mut exprs),
                     false => {}
