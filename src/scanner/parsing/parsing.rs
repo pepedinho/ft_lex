@@ -1,11 +1,11 @@
 use std::fs;
 
-use crate::scanner::parsing::utils::{get_action, is_a_group, is_action, quant};
-
-use super::{
-    structure::{RegularExpression, ScanParser, Token},
-    utils::{handle_token, is_a_char, is_a_class, skip_to_nl},
+use crate::scanner::parsing::{
+    structure::Kind,
+    utils::{get_action, is_action, quant},
 };
+
+use super::structure::{ExprsLst, RegularExpression, ScanParser, Token};
 
 impl ScanParser {
     pub fn parse(scan_path: &str) {
@@ -16,21 +16,33 @@ impl ScanParser {
 
         let mut exprs = RegularExpression::new();
 
+        let mut list = ExprsLst::new();
+
         while let Some(c) = chars.next() {
             match c {
-                '(' => handle_token(&mut chars, is_a_group, &mut exprs),
-                '[' => handle_token(&mut chars, is_a_class, &mut exprs),
-                '"' => handle_token(&mut chars, is_a_char, &mut exprs),
+                '(' => exprs.tokens.push(Token::new(c, Kind::OpenP)),
+                ')' => exprs.tokens.push(Token::new(c, Kind::CloseP)),
+                '[' => exprs.tokens.push(Token::new(c, Kind::OpenB)),
+                ']' => exprs.tokens.push(Token::new(c, Kind::CloseB)),
+                '"' => exprs.tokens.push(Token::new(c, Kind::Quotes)),
                 ' ' => match is_action(&mut chars.clone()) {
-                    true => get_action(&mut chars, &mut exprs),
-                    false => {}
+                    true => {
+                        get_action(&mut chars, &mut exprs);
+                        list.append(exprs);
+                        exprs = RegularExpression::new();
+                    }
+                    false => exprs.tokens.push(Token::new(c, Kind::Char)),
                 },
                 '+' | '*' | '?' => quant(c, &mut exprs),
                 _ => {}
             }
         }
 
-        println!("exprs => {}", exprs);
+        println!("{}", list);
+        // for token in exprs.tokens {
+        //     println!("{}", token);
+        // }
+        // println!("exprs => {}", exprs);
 
         //println!("content : {content}");
     }

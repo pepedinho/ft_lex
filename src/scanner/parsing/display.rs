@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::scanner::parsing::structure::Kind;
 
-use super::structure::{Quant, RegularExpression, Token};
+use super::structure::{ExprsLst, Quant, RegularExpression, Token};
 
 impl fmt::Display for Quant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -20,8 +20,11 @@ impl fmt::Display for Kind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Kind::Char => write!(f, "Char"),
-            Kind::Groupe => write!(f, "Group"),
-            Kind::Classe => write!(f, "Class"),
+            Kind::OpenP => write!(f, "OpenP"),
+            Kind::CloseP => write!(f, "CloseP"),
+            Kind::OpenB => write!(f, "OpenB"),
+            Kind::CloseB => write!(f, "CloseB"),
+            Kind::Quotes => write!(f, "Quote"),
             Kind::Quantifier(q) => write!(f, "Quantifier({})", q),
             Kind::Anchor => write!(f, "Anchor"),
             Kind::Or => write!(f, "Or"),
@@ -32,11 +35,7 @@ impl fmt::Display for Kind {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "[{}: \"{}\"]~[{}] \n\t\t(action) -> [{}]",
-            self.kind, self.content, self.quant, self.action
-        )
+        write!(f, "[{}: \"{}\"]\n", self.kind, self.content)
     }
 }
 
@@ -45,9 +44,21 @@ impl fmt::Display for RegularExpression {
         let parts_str: Vec<String> = self.tokens.iter().map(|p| format!("{}", p)).collect();
         write!(
             f,
-            "RegularExpression:\n- Content: \"{}\"\n- Token:\n  {}",
+            "RegularExpression:\n- Content: \"{}\"\n- Token:\n  {}\n\t\t Action: {}",
             self.content,
-            parts_str.join("\n  ")
+            parts_str.join("\n  "),
+            self.action,
+        )
+    }
+}
+
+impl fmt::Display for ExprsLst {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let exprs_str: Vec<String> = self.exprs.iter().map(|expr| format!("{}", expr)).collect();
+        write!(
+            f,
+            "ExprsLst:\n{}",
+            exprs_str.join("\n-----------------------------------------------\n")
         )
     }
 }

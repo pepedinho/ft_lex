@@ -14,9 +14,12 @@ pub enum Quant {
 
 #[derive(Debug)]
 pub enum Kind {
-    Char,              // ""
-    Groupe,            //()
-    Classe,            //[]
+    Char,              // abc
+    Quotes,            // ""
+    OpenP,             //(
+    CloseP,            //)
+    OpenB,             //[
+    CloseB,            //]
     Quantifier(Quant), //*, +, ?, {}
     Anchor,            // ^, $
     Or,                // |
@@ -25,37 +28,25 @@ pub enum Kind {
 
 #[derive(Debug)]
 pub struct Token {
-    pub content: String,
+    pub content: char,
     pub kind: Kind,
-    pub quant: Kind,
-    pub action: String,
 }
 
 #[derive(Debug)]
 pub struct RegularExpression {
     pub content: String,
     pub tokens: Vec<Token>,
+    pub action: String,
 }
 
 #[derive(Debug)]
-pub struct ExpressionTree {
-    pub expr: Vec<RegularExpression>,
+pub struct ExprsLst {
+    pub exprs: Vec<RegularExpression>,
 }
 
 impl Token {
-    pub fn new(content: String, kind: Kind) -> Self {
-        Token {
-            content,
-            kind,
-            action: String::new(),
-            quant: Kind::None,
-        }
-    }
-    pub fn add_quant(&mut self, quant: Kind) {
-        self.quant = quant;
-    }
-    pub fn add_action(&mut self, action: String) {
-        self.action = action;
+    pub fn new(content: char, kind: Kind) -> Self {
+        Token { content, kind }
     }
 }
 
@@ -64,6 +55,16 @@ impl RegularExpression {
         RegularExpression {
             content: String::new(),
             tokens: Vec::new(),
+            action: String::new(),
         }
+    }
+}
+
+impl ExprsLst {
+    pub fn new() -> Self {
+        ExprsLst { exprs: Vec::new() }
+    }
+    pub fn append(&mut self, expr: RegularExpression) {
+        self.exprs.push(expr);
     }
 }

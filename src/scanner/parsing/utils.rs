@@ -17,45 +17,45 @@ where
     }
 }
 
-pub fn is_a_group<I>(chars: &mut I) -> Result<Token, String>
-where
-    I: Iterator<Item = char>,
-{
-    let mut content = String::new();
+// pub fn is_a_group<I>(chars: &mut I) -> Result<Token, String>
+// where
+//     I: Iterator<Item = char>,
+// {
+//     let mut content = String::new();
+//
+//     while let Some(c) = chars.next() {
+//         match c {
+//             ')' => {
+//                 return Ok(Token::new(c, Kind::Groupe));
+//             }
+//             '"' => {
+//                 return Err("In some quotes".to_string());
+//             }
+//             _ => content.push(c),
+//         }
+//     }
+//     return Err("Excepted ')'".to_string());
+// }
 
-    while let Some(c) = chars.next() {
-        match c {
-            ')' => {
-                return Ok(Token::new(content, Kind::Groupe));
-            }
-            '"' => {
-                return Err("In some quotes".to_string());
-            }
-            _ => content.push(c),
-        }
-    }
-    return Err("Excepted ')'".to_string());
-}
-
-pub fn is_a_class<I>(chars: &mut I) -> Result<Token, String>
-where
-    I: Iterator<Item = char>,
-{
-    let mut content = String::new();
-
-    while let Some(c) = chars.next() {
-        match c {
-            ']' => {
-                return Ok(Token::new(content, Kind::Classe));
-            }
-            '"' => {
-                return Err("In some quotes".to_string());
-            }
-            _ => content.push(c),
-        }
-    }
-    return Err("Excepted ']'".to_string());
-}
+// pub fn is_a_class<I>(chars: &mut I) -> Result<Token, String>
+// where
+//     I: Iterator<Item = char>,
+// {
+//     let mut content = String::new();
+//
+//     while let Some(c) = chars.next() {
+//         match c {
+//             ']' => {
+//                 return Ok(Token::new(c, Kind::Classe));
+//             }
+//             '"' => {
+//                 return Err("In some quotes".to_string());
+//             }
+//             _ => content.push(c),
+//         }
+//     }
+//     return Err("Excepted ']'".to_string());
+// }
 
 pub fn is_a_char<I>(chars: &mut I) -> Result<Token, String>
 where
@@ -66,7 +66,7 @@ where
     while let Some(c) = chars.next() {
         match c {
             '"' => {
-                return Ok(Token::new(content, Kind::Char));
+                return Ok(Token::new(c, Kind::Char));
             }
             _ => content.push(c),
         }
@@ -91,7 +91,7 @@ where
 {
     while let Some(next_c) = chars.next() {
         if next_c != ' ' {
-            if next_c != '|' {
+            if next_c != '|' && next_c != '\\' {
                 return true;
             }
             return false;
@@ -113,21 +113,30 @@ where
             action.push(next_c);
         }
     }
-    if let Some(last_part) = exprs.tokens.last_mut() {
-        last_part.add_action(action);
-    }
+    exprs.action = action;
 }
 
 pub fn quant(c: char, exprs: &mut RegularExpression) {
-    if let Some(last_part) = exprs.tokens.last_mut() {
-        match c {
-            '+' => {
-                last_part.add_quant(Kind::Quantifier(super::structure::Quant::Plus));
-            }
-            '*' => last_part.add_quant(Kind::Quantifier(super::structure::Quant::Star)),
-            '?' => last_part.add_quant(Kind::Quantifier(super::structure::Quant::Interrogation)),
-            _ => {}
+    match c {
+        '+' => {
+            exprs.tokens.push(Token::new(
+                c,
+                Kind::Quantifier(super::structure::Quant::Plus),
+            ));
         }
-        //println!("LAST PART => {} | c => {}", last_part, c);
+        '*' => {
+            exprs.tokens.push(Token::new(
+                c,
+                Kind::Quantifier(super::structure::Quant::Star),
+            ));
+        }
+        '?' => {
+            exprs.tokens.push(Token::new(
+                c,
+                Kind::Quantifier(super::structure::Quant::Interrogation),
+            ));
+        }
+        _ => {}
     }
+    //println!("LAST PART => {} | c => {}", last_part, c);
 }
