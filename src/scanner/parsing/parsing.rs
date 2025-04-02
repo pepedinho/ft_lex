@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::scanner::parsing::{
     structure::{Counter, Kind},
-    utils::{escape_char, get_action, is_a_class, is_action, quant, quotes_treatment},
+    utils::{escape_char, get_action, is_action, quant, quotes_treatment},
 };
 
 use super::structure::{ExprsLst, RegularExpression, ScanParser, Token};
@@ -13,6 +13,7 @@ impl ScanParser {
             count: Counter::new(),
             content: String::new(),
             filename: String::new(),
+            errors: Vec::new(),
         }
     }
     pub fn parse(&mut self, scan_path: &str) {
@@ -23,7 +24,6 @@ impl ScanParser {
         let mut chars = content.chars().peekable();
         let mut exprs = RegularExpression::new();
         let mut list = ExprsLst::new();
-        let mut count = Counter::new();
 
         while let Some(mut c) = chars.next() {
             match c {
@@ -31,7 +31,7 @@ impl ScanParser {
                 ')' => exprs.append_token(Token::new(c, Kind::CloseP)),
                 '[' => {
                     exprs.content.push(c);
-                    let tmp = is_a_class(&mut chars, &mut exprs);
+                    let tmp = self.is_a_class(&mut chars, &mut exprs);
                     exprs.content.push_str(&tmp);
                     continue;
                 }
@@ -53,18 +53,23 @@ impl ScanParser {
                 '\\' => {
                     if let Some(n_c) = escape_char(&mut chars, &mut exprs) {
                         c = n_c;
-                        count.char += 1;
+                        self.count.char += 1;
                     }
                 }
+                '/' => {
+                    exprs.append_token(Token::new(c, Kind::If));
+                }
                 '{' => self.occurence(&mut chars, &mut exprs),
-                '\n' => count.lines += 1,
+                '\n' => self.count.lines += 1,
                 '%' | '\r' => {}
                 _ => exprs.append_token(Token::new(c, Kind::Char)),
             }
             exprs.content.push(c);
-            count.char += 1;
+            self.count.char += 1;
         }
-
+        if !self.errors.is_empty() {
+            self.parse_exit();
+        }
         println!("{}", list);
         // for token in exprs.tokens {
         //     println!("{}", token);

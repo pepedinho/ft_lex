@@ -4,6 +4,7 @@ pub struct ScanParser {
     pub content: String,
     pub filename: String,
     pub count: Counter,
+    pub errors: Vec<String>,
 }
 
 pub struct Counter {
@@ -28,16 +29,14 @@ pub enum Quant {
 #[derive(Debug, PartialEq)]
 pub enum Kind {
     Char,              // abc
-    Quotes,            // ""
     OpenP,             //(
     CloseP,            //)
-    OpenB,             //[
-    CloseB,            //]
     Quantifier(Quant), //*, +, ?, {}
     Anchor,            // ^, $
     Or,                // |
     Concat,
     Repetition(Repetition),
+    If, // /
     None,
 }
 

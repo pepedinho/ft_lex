@@ -18,9 +18,15 @@ where
 }
 
 impl ScanParser {
-    pub fn parse_exit(&mut self, code: i32, msg: String) {
-        println!("{} : {}", self.filename, msg);
-        exit(code);
+    pub fn parse_exit(&mut self) {
+        for s in &self.errors {
+            println!("{}", s);
+        }
+        exit(1);
+    }
+    pub fn stack_error(&mut self, msg: String) {
+        self.errors
+            .push(format!("{} :{}: {}", self.filename, self.count.lines, msg));
     }
     pub fn occurence<I>(&mut self, chars: &mut I, expr: &mut RegularExpression)
     where
@@ -44,16 +50,16 @@ impl ScanParser {
                     comma = true;
                 }
                 '}' => break,
-                _ => self.parse_exit(
-                    1,
-                    format!("{}: bad character inside {{}}'s", self.count.lines),
-                ),
+                _ => self.stack_error(format!("bad character inside {{}}'s")),
             }
             self.count.char += 1;
         }
         let l: i32 = lbuf.parse().expect("Conversion failed");
         if !buf.is_empty() {
             let r: i32 = buf.parse().expect("Conversion failed");
+            if l > r {
+                self.stack_error("bad iteration values".to_string());
+            }
             expr.append_token(Token::new(
                 '°',
                 Kind::Repetition(Repetition::new(vec![l, r], RepCases::Between)),
@@ -72,59 +78,67 @@ impl ScanParser {
             Kind::Repetition(Repetition::new(vec![l], RepCases::Exact)),
         ));
     }
-}
 
-pub fn is_a_class(
-    chars: &mut std::iter::Peekable<std::str::Chars>,
-    expr: &mut RegularExpression,
-) -> String {
-    let mut previous_char: Option<char> = None;
-    let mut content = String::new();
-    while let Some(mut c) = chars.next() {
-        if let Some(_p) = previous_char {
-            if c != ']' {
-                expr.append_token(Token::new('|', Kind::Or));
+    pub fn is_a_class(
+        &mut self,
+        chars: &mut std::iter::Peekable<std::str::Chars>,
+        expr: &mut RegularExpression,
+    ) -> String {
+        let mut previous_char: Option<char> = None;
+        let mut content = String::new();
+        expr.append_token(Token::new('(', Kind::OpenP));
+        while let Some(mut c) = chars.next() {
+            if let Some(_p) = previous_char {
+                if c != ']' {
+                    expr.append_token(Token::new('|', Kind::Or));
+                }
             }
-        }
-        match c {
-            ']' => {
-                content.push(c);
-                break;
-            }
-            '-' => {
-                if let Some(p_char) = previous_char {
-                    match p_char {
-                        '\\' | '\0' => {
-                            expr.append_token(Token::new(c, Kind::Char));
-                            content.push(c);
-                        }
-                        _ => {
-                            content.push(c);
-                            let mut ite = (p_char as u8 + 1) as char;
-                            if let Some(n_char) = chars.next() {
-                                //TODO: gerer si b_char > n_char
-                                while ite <= n_char {
-                                    expr.append_token(Token::new(ite, Kind::Char));
-                                    if ite != n_char {
-                                        expr.append_token(Token::new('|', Kind::Or));
-                                    }
-                                    ite = (ite as u8 + 1) as char;
-                                }
-                                c = n_char;
+            match c {
+                ']' => {
+                    content.push(c);
+                    break;
+                }
+                '-' => {
+                    if let Some(p_char) = previous_char {
+                        match p_char {
+                            '\\' | '\0' => {
+                                expr.append_token(Token::new(c, Kind::Char));
                                 content.push(c);
+                            }
+                            _ => {
+                                content.push(c);
+                                let mut ite = (p_char as u8 + 1) as char;
+                                if let Some(n_char) = chars.next() {
+                                    if ite as u8 > n_char as u8 {
+                                        self.stack_error(
+                                            "negative range in character class".to_string(),
+                                        );
+                                    }
+                                    //TODO: gerer si b_char > n_char
+                                    while ite <= n_char {
+                                        expr.append_token(Token::new(ite, Kind::Char));
+                                        if ite != n_char {
+                                            expr.append_token(Token::new('|', Kind::Or));
+                                        }
+                                        ite = (ite as u8 + 1) as char;
+                                    }
+                                    c = n_char;
+                                    content.push(c);
+                                }
                             }
                         }
                     }
                 }
+                _ => {
+                    expr.append_token(Token::new(c, Kind::Char));
+                    content.push(c);
+                }
             }
-            _ => {
-                expr.append_token(Token::new(c, Kind::Char));
-                content.push(c);
-            }
+            previous_char = Some(c);
         }
-        previous_char = Some(c);
+        expr.append_token(Token::new(')', Kind::CloseP));
+        content
     }
-    content
 }
 
 pub fn escape_char<I>(chars: &mut I, expr: &mut RegularExpression) -> Option<char>

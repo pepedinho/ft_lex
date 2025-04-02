@@ -1,5 +1,6 @@
 %%
-(abc){1, 3} printf("YOUHOU => %s\n", yytext);
+a/b printf("HOULISDAY\n");
+(abc){1,3} printf("YOUHOU => %s\n", yytext);
 [0-9A-Z]+ printf("NUMBER: %s\n", yytext);
 "+" |
 "-" |
