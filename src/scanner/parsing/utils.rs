@@ -90,21 +90,43 @@ pub fn is_a_class(
     content
 }
 
-pub fn is_a_char<I>(chars: &mut I) -> Result<Token, String>
+pub fn escape_char<I>(chars: &mut I, expr: &mut RegularExpression) -> Option<char>
+where
+    I: Iterator<Item = char>,
+{
+    if let Some(n_c) = chars.next() {
+        match n_c {
+            'n' => expr.tokens.push(Token::new('\n', Kind::Char)),
+            't' => expr.tokens.push(Token::new('\t', Kind::Char)),
+            'r' => expr.tokens.push(Token::new('\r', Kind::Char)),
+            _ => expr.tokens.push(Token::new(n_c, Kind::Char)),
+        }
+        return Some(n_c);
+    }
+    None
+}
+
+pub fn quotes_treatment<I>(chars: &mut I, expr: &mut RegularExpression) -> String
 where
     I: Iterator<Item = char>,
 {
     let mut content = String::new();
 
-    while let Some(c) = chars.next() {
+    while let Some(mut c) = chars.next() {
         match c {
             '"' => {
-                return Ok(Token::new(c, Kind::Char));
+                break;
             }
-            _ => content.push(c),
+            '\\' => {
+                if let Some(n_c) = escape_char(chars, expr) {
+                    c = n_c;
+                }
+            }
+            _ => expr.tokens.push(Token::new(c, Kind::Char)),
         }
+        content.push(c);
     }
-    return Err("Excepted '\"'".to_string());
+    content
 }
 
 pub fn skip_to_nl<I>(chars: &mut I)

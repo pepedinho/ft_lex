@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::scanner::parsing::{
     structure::Kind,
-    utils::{get_action, is_a_class, is_action, quant},
+    utils::{escape_char, get_action, is_a_class, is_action, quant, quotes_treatment},
 };
 
 use super::structure::{ExprsLst, RegularExpression, ScanParser, Token};
@@ -16,7 +16,7 @@ impl ScanParser {
         let mut exprs = RegularExpression::new();
         let mut list = ExprsLst::new();
 
-        while let Some(c) = chars.next() {
+        while let Some(mut c) = chars.next() {
             match c {
                 '(' => exprs.tokens.push(Token::new(c, Kind::OpenP)),
                 ')' => exprs.tokens.push(Token::new(c, Kind::CloseP)),
@@ -26,17 +26,26 @@ impl ScanParser {
                     exprs.content.push_str(&tmp);
                     continue;
                 }
-                //']' => exprs.tokens.push(Token::new(c, Kind::CloseB)),
-                '"' => exprs.tokens.push(Token::new(c, Kind::Quotes)),
+                '"' => {
+                    exprs.content.push(c);
+                    let tmp = quotes_treatment(&mut chars, &mut exprs);
+                    exprs.content.push_str(&tmp);
+                }
                 ' ' => match is_action(&mut chars.clone()) {
                     true => {
                         get_action(&mut chars, &mut exprs);
                         list.append(exprs);
                         exprs = RegularExpression::new();
                     }
-                    false => exprs.tokens.push(Token::new(c, Kind::Char)),
+                    false => {}
                 },
+                '|' => exprs.tokens.push(Token::new(c, Kind::Or)),
                 '+' | '*' | '?' => quant(c, &mut exprs),
+                '\\' => {
+                    if let Some(n_c) = escape_char(&mut chars, &mut exprs) {
+                        c = n_c;
+                    }
+                }
                 '\n' | '%' | '\r' => {}
                 _ => exprs.tokens.push(Token::new(c, Kind::Char)),
             }
