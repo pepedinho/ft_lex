@@ -17,12 +17,11 @@ where
     }
 }
 
-pub fn parse_exit(code: i32, msg: String) {
-    println!("Error : {}", msg);
-    exit(code);
-}
-
 impl ScanParser {
+    pub fn parse_exit(&mut self, code: i32, msg: String) {
+        println!("{} : {}", self.filename, msg);
+        exit(code);
+    }
     pub fn occurence<I>(&mut self, chars: &mut I, expr: &mut RegularExpression)
     where
         I: Iterator<Item = char>,
@@ -45,7 +44,10 @@ impl ScanParser {
                     comma = true;
                 }
                 '}' => break,
-                _ => parse_exit(1, format!("")),
+                _ => self.parse_exit(
+                    1,
+                    format!("{}: bad character inside {{}}'s", self.count.lines),
+                ),
             }
             self.count.char += 1;
         }

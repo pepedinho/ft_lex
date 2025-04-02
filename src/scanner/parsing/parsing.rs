@@ -16,6 +16,7 @@ impl ScanParser {
         }
     }
     pub fn parse(&mut self, scan_path: &str) {
+        self.filename = scan_path.to_string();
         let content =
             fs::read_to_string(&scan_path).expect("Should have been able to read the file");
 
