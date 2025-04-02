@@ -1,6 +1,6 @@
-use std::{char, str::Chars};
+use std::{char, process::exit, str::Chars};
 
-use super::structure::{Kind, RegularExpression, Token};
+use super::structure::{Counter, Kind, RegularExpression, RepCases, Repetition, ScanParser, Token};
 
 pub fn handle_token<I, F>(chars: &mut I, parser: F, exprs: &mut RegularExpression)
 where
@@ -17,25 +17,60 @@ where
     }
 }
 
-// pub fn is_a_group<I>(chars: &mut I) -> Result<Token, String>
-// where
-//     I: Iterator<Item = char>,
-// {
-//     let mut content = String::new();
-//
-//     while let Some(c) = chars.next() {
-//         match c {
-//             ')' => {
-//                 return Ok(Token::new(c, Kind::Groupe));
-//             }
-//             '"' => {
-//                 return Err("In some quotes".to_string());
-//             }
-//             _ => content.push(c),
-//         }
-//     }
-//     return Err("Excepted ')'".to_string());
-// }
+pub fn parse_exit(code: i32, msg: String) {
+    println!("Error : {}", msg);
+    exit(code);
+}
+
+impl ScanParser {
+    pub fn occurence<I>(&mut self, chars: &mut I, expr: &mut RegularExpression)
+    where
+        I: Iterator<Item = char>,
+    {
+        let mut buf = String::new();
+        let mut lbuf = String::new();
+        let mut comma = false;
+
+        while let Some(c) = chars.next() {
+            match c {
+                '0'..'9' => {
+                    buf.push(c);
+                }
+                ',' => {
+                    if buf.is_empty() || !lbuf.is_empty() {
+                        exit(1);
+                    }
+                    lbuf = buf.clone();
+                    buf.clear();
+                    comma = true;
+                }
+                '}' => break,
+                _ => parse_exit(1, format!("")),
+            }
+            self.count.char += 1;
+        }
+        let l: i32 = lbuf.parse().expect("Conversion failed");
+        if !buf.is_empty() {
+            let r: i32 = buf.parse().expect("Conversion failed");
+            expr.append_token(Token::new(
+                '°',
+                Kind::Repetition(Repetition::new(vec![l, r], RepCases::Between)),
+            ));
+            return;
+        }
+        if comma {
+            expr.append_token(Token::new(
+                '°',
+                Kind::Repetition(Repetition::new(vec![l], RepCases::AtLeast)),
+            ));
+            return;
+        }
+        expr.append_token(Token::new(
+            '°',
+            Kind::Repetition(Repetition::new(vec![l], RepCases::Exact)),
+        ));
+    }
+}
 
 pub fn is_a_class(
     chars: &mut std::iter::Peekable<std::str::Chars>,
@@ -46,7 +81,7 @@ pub fn is_a_class(
     while let Some(mut c) = chars.next() {
         if let Some(_p) = previous_char {
             if c != ']' {
-                expr.tokens.push(Token::new('|', Kind::Or));
+                expr.append_token(Token::new('|', Kind::Or));
             }
         }
         match c {
@@ -58,7 +93,7 @@ pub fn is_a_class(
                 if let Some(p_char) = previous_char {
                     match p_char {
                         '\\' | '\0' => {
-                            expr.tokens.push(Token::new(c, Kind::Char));
+                            expr.append_token(Token::new(c, Kind::Char));
                             content.push(c);
                         }
                         _ => {
@@ -67,9 +102,9 @@ pub fn is_a_class(
                             if let Some(n_char) = chars.next() {
                                 //TODO: gerer si b_char > n_char
                                 while ite <= n_char {
-                                    expr.tokens.push(Token::new(ite, Kind::Char));
+                                    expr.append_token(Token::new(ite, Kind::Char));
                                     if ite != n_char {
-                                        expr.tokens.push(Token::new('|', Kind::Or));
+                                        expr.append_token(Token::new('|', Kind::Or));
                                     }
                                     ite = (ite as u8 + 1) as char;
                                 }
@@ -81,7 +116,7 @@ pub fn is_a_class(
                 }
             }
             _ => {
-                expr.tokens.push(Token::new(c, Kind::Char));
+                expr.append_token(Token::new(c, Kind::Char));
                 content.push(c);
             }
         }
@@ -96,10 +131,10 @@ where
 {
     if let Some(n_c) = chars.next() {
         match n_c {
-            'n' => expr.tokens.push(Token::new('\n', Kind::Char)),
-            't' => expr.tokens.push(Token::new('\t', Kind::Char)),
-            'r' => expr.tokens.push(Token::new('\r', Kind::Char)),
-            _ => expr.tokens.push(Token::new(n_c, Kind::Char)),
+            'n' => expr.append_token(Token::new('\n', Kind::Char)),
+            't' => expr.append_token(Token::new('\t', Kind::Char)),
+            'r' => expr.append_token(Token::new('\r', Kind::Char)),
+            _ => expr.append_token(Token::new(n_c, Kind::Char)),
         }
         return Some(n_c);
     }

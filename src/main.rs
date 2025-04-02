@@ -9,8 +9,9 @@ fn main() {
         println!("need 1 argument !");
         exit(1);
     });
+    let mut parser = ScanParser::new();
 
-    ScanParser::parse(&file);
+    parser.parse(&file);
 
     println!("{file}");
 }

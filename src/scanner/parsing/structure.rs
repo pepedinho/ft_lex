@@ -1,10 +1,23 @@
-use std::fmt;
+use std::{collections::btree_map::Values, fmt};
 
 pub struct ScanParser {
     pub content: String,
+    pub filename: String,
+    pub count: Counter,
 }
 
-#[derive(Debug)]
+pub struct Counter {
+    pub char: i32,
+    pub lines: i32,
+}
+
+impl Counter {
+    pub fn new() -> Self {
+        Counter { char: 1, lines: 1 }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Quant {
     Plus,
     Star,
@@ -12,7 +25,7 @@ pub enum Quant {
     Brackets,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Kind {
     Char,              // abc
     Quotes,            // ""
@@ -23,7 +36,28 @@ pub enum Kind {
     Quantifier(Quant), //*, +, ?, {}
     Anchor,            // ^, $
     Or,                // |
+    Concat,
+    Repetition(Repetition),
     None,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum RepCases {
+    Exact,
+    AtLeast,
+    Between,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Repetition {
+    pub case: RepCases,
+    pub values: Vec<i32>,
+}
+
+impl Repetition {
+    pub fn new(values: Vec<i32>, case: RepCases) -> Self {
+        Repetition { values, case }
+    }
 }
 
 #[derive(Debug)]
@@ -57,6 +91,18 @@ impl RegularExpression {
             tokens: Vec::new(),
             action: String::new(),
         }
+    }
+    pub fn append_token(&mut self, token: Token) {
+        if let Some(last) = self.tokens.last() {
+            if last.kind == Kind::Char && token.kind == Kind::Char {
+                self.tokens.push(Token::new('²', Kind::Concat));
+                self.tokens.push(token);
+                return;
+            }
+            self.tokens.push(token);
+            return;
+        }
+        self.tokens.push(token);
     }
 }
 
