@@ -1,6 +1,6 @@
 use std::{env, process::exit};
 
-use scanner::parsing::tokenizer::structure::ScanParser;
+use scanner::parsing::{thomson::thomson::from_postfix_to_nfa, tokenizer::structure::ScanParser};
 
 mod scanner;
 
@@ -21,5 +21,6 @@ fn main() {
         "-------------------------------[AFTER]-------------------------------\n{}",
         bef
     );
+    from_postfix_to_nfa(bef);
     println!("{file}");
 }
