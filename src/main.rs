@@ -1,6 +1,6 @@
 use std::{env, process::exit};
 
-use scanner::parsing::structure::ScanParser;
+use scanner::parsing::tokenizer::structure::ScanParser;
 
 mod scanner;
 
@@ -11,7 +11,15 @@ fn main() {
     });
     let mut parser = ScanParser::new();
 
-    parser.parse(&file);
-
+    let mut bef = parser.parse(&file);
+    println!(
+        "-------------------------------[BEFORE]-------------------------------\n{}",
+        bef
+    );
+    bef.to_postfix();
+    println!(
+        "-------------------------------[AFTER]-------------------------------\n{}",
+        bef
+    );
     println!("{file}");
 }

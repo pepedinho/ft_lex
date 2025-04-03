@@ -1,2 +1,2 @@
 pub mod shutting_yard;
-pub mod tokenizer;
+pub mod structure;

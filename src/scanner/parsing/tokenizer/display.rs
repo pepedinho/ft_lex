@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::scanner::parsing::structure::{Kind, RepCases};
+use crate::scanner::parsing::tokenizer::structure::{Kind, RepCases};
 
 use super::structure::{ExprsLst, Quant, RegularExpression, Repetition, Token};
 

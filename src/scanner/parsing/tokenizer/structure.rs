@@ -18,7 +18,7 @@ impl Counter {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Quant {
     Plus,
     Star,
@@ -26,7 +26,7 @@ pub enum Quant {
     Brackets,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Kind {
     Char,              // abc
     OpenP,             //(
@@ -40,14 +40,14 @@ pub enum Kind {
     None,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum RepCases {
     Exact,
     AtLeast,
     Between,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Repetition {
     pub case: RepCases,
     pub values: Vec<i32>,
@@ -59,7 +59,7 @@ impl Repetition {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub content: char,
     pub kind: Kind,

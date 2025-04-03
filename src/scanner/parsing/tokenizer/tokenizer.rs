@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::scanner::parsing::{
+use crate::scanner::parsing::tokenizer::{
     structure::{Counter, Kind},
     utils::{escape_char, get_action, is_action, quant, quotes_treatment},
 };
@@ -16,7 +16,7 @@ impl ScanParser {
             errors: Vec::new(),
         }
     }
-    pub fn parse(&mut self, scan_path: &str) {
+    pub fn parse(&mut self, scan_path: &str) -> ExprsLst {
         self.filename = scan_path.to_string();
         let content =
             fs::read_to_string(&scan_path).expect("Should have been able to read the file");
@@ -70,12 +70,7 @@ impl ScanParser {
         if !self.errors.is_empty() {
             self.parse_exit();
         }
-        println!("{}", list);
-        // for token in exprs.tokens {
-        //     println!("{}", token);
-        // }
-        // println!("exprs => {}", exprs);
-
-        //println!("content : {content}");
+        //println!("{}", list);
+        list
     }
 }
