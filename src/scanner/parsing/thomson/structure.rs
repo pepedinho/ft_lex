@@ -63,4 +63,49 @@ impl NFA {
         }
         println!("");
     }
+    pub fn proto_display(&self) {
+        println!("==================== NFA ====================");
+        println!("States:");
+
+        let mut sorted_states: Vec<&State> = self.states.values().collect();
+        sorted_states.sort_by_key(|s| s.id);
+
+        for state in &sorted_states {
+            let final_marker = if state.is_final { " (Final)" } else { "" };
+            println!("  [{}]{}", state.id, final_marker);
+        }
+
+        println!("\nTransitions:");
+
+        let mut transition_map: HashMap<usize, Vec<(Option<char>, usize)>> = HashMap::new();
+
+        for transition in &self.transitions {
+            let symbol_str = match &transition.symbol {
+                Some(symbol) => Some(symbol.content.clone()),
+                None => None,
+            };
+            transition_map
+                .entry(transition.from)
+                .or_insert_with(Vec::new)
+                .push((symbol_str, transition.to));
+        }
+
+        // Afficher les transitions organisées
+        for (state_id, transitions) in &transition_map {
+            print!("  [{}] → ", state_id);
+
+            let mut transition_strings = Vec::new();
+            for (symbol, target) in transitions {
+                let transition_str = match symbol {
+                    Some(s) => format!("({}) → [{}]", s, target),
+                    None => format!("(ε) → [{}]", target),
+                };
+                transition_strings.push(transition_str);
+            }
+
+            println!("{}", transition_strings.join(" | "));
+        }
+
+        println!("=============================================");
+    }
 }
