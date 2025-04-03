@@ -13,30 +13,44 @@ fn build_nfa(token: Token) -> NFA {
 
 fn merge_nfa(a: NFA, b: NFA) -> NFA {
     let mut nfa = NFA::new();
-    let mut map: HashMap<usize, Transition> = HashMap::new();
+    let mut map: Vec<Transition> = Vec::new();
     let mut index: usize = 0;
     let mut bp: usize = 0;
 
+    println!("a________");
     a.display();
+    println!("b________");
     b.display();
 
     println!("-----------------------------");
 
     for (i, t) in a.transitions.iter().enumerate() {
-        map.insert(i, t.clone());
+        map.push(t.clone());
         index = i;
         bp = i;
     }
     for (i, t) in b.transitions.iter().enumerate() {
-        map.insert(index + 1, t.clone());
+        map.push(t.clone());
         index += i;
     }
-    println!("DEBUG => map len : {}", map.len());
-    for (i, t) in map.iter() {
-        if *i >= bp {
+    println!("DEBUG => bp = {}", bp);
+    for (i, t) in map.iter().enumerate() {
+        if i > bp {
             nfa.add_state(i + t.to, false);
             nfa.add_transition(t.from + i, t.to + i, t.symbol.clone());
+            println!(
+                "({})create [{}] from({}) to ({})",
+                i,
+                t.symbol.clone().unwrap().content,
+                t.from + i,
+                t.to + i,
+            );
         } else {
+            println!(
+                "({})[{}] has been stacked",
+                i,
+                t.symbol.clone().unwrap().content
+            );
             nfa.add_state(t.to, false);
             nfa.add_transition(t.from, t.to, t.symbol.clone());
         }
