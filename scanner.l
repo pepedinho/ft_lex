@@ -1,2 +1,2 @@
 %%
-abc|xyz printf("oui");
+a|b printf("ok merci\n");
