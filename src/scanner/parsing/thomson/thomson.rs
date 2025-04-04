@@ -179,7 +179,7 @@ pub fn from_postfix_to_nfa(exprs: ExprsLst) -> NFA {
     if let Some(nfa) = nfas.last() {
         nfa.display();
         //nfa.proto_display();
-        println!("DEBUG => {:?}", nfas);
+        // println!("DEBUG => {:?}", nfas);
     }
     todo!()
 }
