@@ -58,6 +58,7 @@ fn merge_nfa(a: NFA, b: NFA) -> NFA {
 
     //nfa.display();
     println!("=============================");
+    nfa.display();
     nfa
 }
 

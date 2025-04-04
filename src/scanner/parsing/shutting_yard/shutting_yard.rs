@@ -38,11 +38,9 @@ impl ExprsLst {
                     Kind::Or => {
                         if let Some(last) = op_stack.last() {
                             match last.kind {
-                                Kind::Quantifier(_) | Kind::Concat => {
-                                    if matches!(last.kind, Kind::Quantifier(_)) {
-                                        if let Some(op) = op_stack.pop() {
-                                            exprs.tokens.push(op);
-                                        }
+                                Kind::Quantifier(_) | Kind::Concat | Kind::Or => {
+                                    if let Some(op) = op_stack.pop() {
+                                        exprs.tokens.push(op);
                                     }
                                 }
                                 _ => {}

@@ -1,2 +1,2 @@
 %%
-a|b printf("ok merci\n");
+[a-z] printf("ok merci\n");
